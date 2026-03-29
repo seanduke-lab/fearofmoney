@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F·O·M — Fear of Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --ink: #1A1A14;
+    --ink-light: #3D3D30;
+    --fom-green: #2A5C45;
+    --fom-green-light: #3A7A5C;
+    --fom-green-pale: #E8F0EC;
+    --gold: #B8860B;
+    --gold-light: #D4A017;
+    --border: rgba(26,26,20,0.15);
+    --border-strong: rgba(26,26,20,0.3);
+    --engraving: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h4v1H0z' fill='%231A1A14' fill-opacity='0.03'/%3E%3C/svg%3E");
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'EB Garamond', Georgia, serif; background: var(--cream); color: var(--ink); min-height: 100vh; background-image: var(--engraving); }
+
+  /* LOGIN */
+  #login-screen { position: fixed; inset: 0; background: var(--ink); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; background-image: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.015) 3px,rgba(255,255,255,0.015) 4px); }
+  .login-bill { width: min(600px, 90vw); border: 3px solid var(--gold); border-radius: 6px; padding: 40px 48px; position: relative; background: #0d0d08; box-shadow: 0 0 0 8px rgba(184,134,11,0.1), inset 0 0 60px rgba(0,0,0,0.5); }
+  .bill-corner { position: absolute; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--gold); opacity: 0.6; letter-spacing: 0.05em; }
+  .bill-corner.tl { top: 12px; left: 16px; } .bill-corner.tr { top: 12px; right: 16px; } .bill-corner.bl { bottom: 12px; left: 16px; } .bill-corner.br { bottom: 12px; right: 16px; }
+  .bill-top-text { text-align: center; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.3em; color: rgba(184,134,11,0.5); text-transform: uppercase; margin-bottom: 12px; }
+  .bill-title { text-align: center; font-family: 'Playfair Display', serif; font-size: clamp(28px,5vw,44px); font-weight: 900; letter-spacing: 0.08em; color: var(--cream); text-transform: uppercase; line-height: 1; margin-bottom: 6px; }
+  .bill-subtitle { text-align: center; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 28px; }
+  .bill-divider { border: none; border-top: 1px solid rgba(184,134,11,0.3); margin: 20px 0; }
+  .bill-instruction { text-align: center; font-family: 'EB Garamond', serif; font-style: italic; font-size: 15px; color: rgba(245,240,232,0.5); margin-bottom: 20px; }
+  .bill-input { width: 100%; background: rgba(245,240,232,0.05); border: 1px solid rgba(184,134,11,0.4); border-radius: 3px; padding: 12px 16px; font-family: 'Space Mono', monospace; font-size: 13px; color: var(--cream); letter-spacing: 0.15em; outline: none; transition: border-color 0.2s; margin-bottom: 16px; display: block; }
+  .bill-input:focus { border-color: var(--gold); }
+  .bill-input::placeholder { color: rgba(245,240,232,0.2); }
+  .bill-btn { width: 100%; background: var(--fom-green); border: none; border-radius: 3px; padding: 13px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cream); cursor: pointer; transition: background 0.2s; }
+  .bill-btn:hover { background: var(--fom-green-light); }
+  .bill-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .bill-error { text-align: center; font-family: 'Space Mono', monospace; font-size: 11px; color: #c0392b; margin-top: 10px; min-height: 16px; letter-spacing: 0.05em; }
+  .bill-serial { text-align: center; font-family: 'Space Mono', monospace; font-size: 9px; color: rgba(184,134,11,0.3); letter-spacing: 0.2em; margin-top: 16px; }
+
+  /* APP */
+  #app { display: none; min-height: 100vh; }
+  .app-header { background: var(--ink); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 60px; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 20px; letter-spacing: 0.2em; color: var(--cream); text-transform: uppercase; }
+  .header-logo span { color: var(--gold); font-style: italic; margin: 0 2px; }
+  .header-nav { display: flex; gap: 4px; }
+  .nav-btn { background: none; border: none; padding: 6px 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.45); cursor: pointer; border-radius: 3px; transition: color 0.2s, background 0.2s; }
+  .nav-btn:hover { color: var(--cream); background: rgba(255,255,255,0.06); }
+  .nav-btn.active { color: var(--gold); background: rgba(184,134,11,0.12); }
+
+  /* SYNC INDICATOR */
+  .sync-indicator { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: rgba(245,240,232,0.3); display: flex; align-items: center; gap: 6px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(245,240,232,0.2); transition: background 0.3s; flex-shrink: 0; }
+  .sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+  .sync-dot.synced { background: #2ecc71; }
+  .sync-dot.error { background: #c0392b; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .main-content { max-width: 1200px; margin: 0 auto; padding: 36px 32px; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--ink); }
+  .section-sub { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--fom-green); text-transform: uppercase; margin-top: 2px; }
+
+  .btn-primary { background: var(--fom-green); border: none; border-radius: 3px; padding: 10px 20px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream); cursor: pointer; transition: background 0.2s; }
+  .btn-primary:hover { background: var(--fom-green-light); }
+  .btn-ghost { background: none; border: 1px solid var(--border-strong); border-radius: 3px; padding: 9px 18px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-light); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+  .btn-ghost:hover { border-color: var(--fom-green); color: var(--fom-green); }
+  .btn-danger { background: none; border: 1px solid rgba(192,57,43,0.3); border-radius: 3px; padding: 6px 12px; font-family: 'Space Mono', monospace; font-size: 10px; color: #c0392b; cursor: pointer; transition: background 0.2s; }
+  .btn-danger:hover { background: rgba(192,57,43,0.08); }
+
+  /* DASHBOARD */
+  .dash-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--ink); border-radius: 4px; padding: 20px 22px; position: relative; overflow: hidden; }
+  .stat-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 60px; height: 60px; background: rgba(184,134,11,0.06); border-radius: 50%; transform: translate(20px,20px); }
+  .stat-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 8px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--cream); line-height: 1; }
+  .stat-sub { font-family: 'EB Garamond', serif; font-style: italic; font-size: 13px; color: rgba(245,240,232,0.3); margin-top: 6px; }
+  .stat-accent { color: var(--gold); }
+  .dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .dash-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 20px 24px; }
+  .dash-card-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fom-green); margin-bottom: 16px; }
+  .dash-item { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .dash-item:last-child { border-bottom: none; }
+  .dash-item-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 500; }
+  .dash-item-meta { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(26,26,20,0.4); }
+  .focus-card { background: var(--fom-green); border-radius: 4px; padding: 20px 24px; margin-bottom: 24px; }
+  .focus-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245,240,232,0.5); margin-bottom: 8px; }
+  .focus-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 18px; color: var(--cream); line-height: 1.5; }
+  .focus-edit { background: none; border: 1px solid rgba(245,240,232,0.3); border-radius: 2px; padding: 4px 10px; font-family: 'Space Mono', monospace; font-size: 9px; color: rgba(245,240,232,0.5); cursor: pointer; margin-top: 12px; transition: color 0.2s; }
+  .focus-edit:hover { color: var(--cream); border-color: rgba(245,240,232,0.6); }
+
+  /* BADGE */
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 2px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+  .badge-idea { background: rgba(184,134,11,0.12); color: var(--gold); }
+  .badge-research { background: rgba(26,26,20,0.08); color: var(--ink-light); }
+  .badge-outreach { background: rgba(42,92,69,0.12); color: var(--fom-green); }
+  .badge-conversation { background: rgba(52,152,219,0.12); color: #2980b9; }
+  .badge-confirmed { background: rgba(42,92,69,0.2); color: var(--fom-green); }
+  .badge-recorded { background: rgba(184,134,11,0.2); color: var(--gold); }
+  .badge-published { background: rgba(26,26,20,0.85); color: var(--cream); }
+  .badge-pass { background: rgba(192,57,43,0.1); color: #c0392b; }
+  .badge-ep-confirmed { background: rgba(184,134,11,0.12); color: var(--gold); }
+  .badge-ep-prepped { background: rgba(52,152,219,0.12); color: #2980b9; }
+  .badge-ep-recorded { background: rgba(42,92,69,0.12); color: var(--fom-green); }
+  .badge-ep-editing { background: rgba(155,89,182,0.12); color: #8e44ad; }
+  .badge-ep-ready { background: rgba(184,134,11,0.2); color: var(--gold); }
+  .badge-ep-live { background: rgba(26,26,20,0.85); color: var(--cream); }
+  .badge-raw { background: rgba(26,26,20,0.08); color: var(--ink-light); }
+  .badge-developing { background: rgba(52,152,219,0.12); color: #2980b9; }
+  .badge-ready { background: rgba(42,92,69,0.2); color: var(--fom-green); }
+  .badge-generic { background: rgba(26,26,20,0.08); color: var(--ink-light); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .data-table th { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(26,26,20,0.4); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 400; }
+  .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--ink); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(42,92,69,0.03); }
+  .data-table .name-cell { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 500; }
+  .data-table .meta-cell { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(26,26,20,0.45); }
+  .data-table .notes-cell { font-style: italic; font-size: 13px; color: rgba(26,26,20,0.6); max-width: 200px; }
+  .table-wrap { background: white; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .table-toolbar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar-search { flex: 1; min-width: 180px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 8px 12px; font-family: 'EB Garamond', serif; font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .toolbar-search:focus { border-color: var(--fom-green); }
+  .toolbar-search::placeholder { color: rgba(26,26,20,0.3); font-style: italic; }
+  .toolbar-select { background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 8px 12px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink); outline: none; cursor: pointer; }
+
+  /* KANBAN */
+  .kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 16px; margin-top: 8px; }
+  .kanban-col { background: rgba(26,26,20,0.03); border-radius: 4px; padding: 12px; }
+  .kanban-col-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(26,26,20,0.4); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .kanban-count { background: rgba(26,26,20,0.08); border-radius: 10px; padding: 1px 7px; font-size: 9px; }
+  .kanban-card { background: white; border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+  .kanban-card:hover { border-color: var(--fom-green); }
+  .kanban-card-name { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .kanban-card-meta { font-family: 'Space Mono', monospace; font-size: 9px; color: rgba(26,26,20,0.4); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,20,0.7); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal { background: var(--cream); border-radius: 6px; border: 1px solid var(--border-strong); width: min(640px,100%); max-height: 90vh; overflow-y: auto; padding: 32px; position: relative; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 20px; cursor: pointer; color: rgba(26,26,20,0.4); padding: 4px 8px; border-radius: 3px; }
+  .modal-close:hover { color: var(--ink); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.span2 { grid-column: span 2; }
+  .form-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(26,26,20,0.5); }
+  .form-input, .form-select, .form-textarea { background: white; border: 1px solid var(--border-strong); border-radius: 3px; padding: 9px 12px; font-family: 'EB Garamond', serif; font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.2s; width: 100%; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--fom-green); }
+  .form-select { font-family: 'Space Mono', monospace; font-size: 11px; }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  /* TAG INPUT */
+  .tag-input-wrap { background: white; border: 1px solid var(--border-strong); border-radius: 3px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; cursor: text; transition: border-color 0.2s; }
+  .tag-input-wrap:focus-within { border-color: var(--fom-green); }
+  .tag-pill { background: var(--fom-green-pale); border: 1px solid rgba(42,92,69,0.2); border-radius: 2px; padding: 2px 6px 2px 8px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--fom-green); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .tag-pill-remove { background: none; border: none; cursor: pointer; color: rgba(42,92,69,0.5); font-size: 12px; line-height: 1; padding: 0; }
+  .tag-pill-remove:hover { color: #c0392b; }
+  .tag-input-field { border: none; outline: none; background: none; font-family: 'EB Garamond', serif; font-size: 13px; color: var(--ink); flex: 1; min-width: 80px; padding: 2px 4px; }
+  .tag-suggestions { position: fixed; background: white; border: 1px solid var(--border-strong); border-radius: 3px; z-index: 600; max-height: 180px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 180px; }
+  .tag-suggestion-item { padding: 8px 12px; font-family: 'EB Garamond', serif; font-size: 14px; cursor: pointer; transition: background 0.1s; }
+  .tag-suggestion-item:hover { background: var(--fom-green-pale); }
+  .tag-suggestion-item.create { font-style: italic; color: var(--fom-green); border-top: 1px solid var(--border); }
+  .single-tag-wrap { position: relative; }
+
+  /* CHECKLIST */
+  .checklist-section { margin-bottom: 20px; }
+  .checklist-section-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fom-green); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .checklist-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; }
+  .checklist-item input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--fom-green); cursor: pointer; flex-shrink: 0; }
+  .checklist-item label { font-family: 'EB Garamond', serif; font-size: 14px; color: var(--ink); cursor: pointer; line-height: 1.4; }
+  .checklist-item.done label { text-decoration: line-through; color: rgba(26,26,20,0.35); }
+  .progress-bar-wrap { background: rgba(26,26,20,0.08); border-radius: 2px; height: 4px; margin-bottom: 20px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--fom-green); border-radius: 2px; transition: width 0.3s; }
+
+  /* EPISODE CARD */
+  .episode-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 20px 24px; margin-bottom: 16px; cursor: pointer; transition: border-color 0.15s; display: flex; gap: 20px; align-items: flex-start; }
+  .episode-card:hover { border-color: var(--fom-green); }
+  .ep-number { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: rgba(26,26,20,0.12); line-height: 1; min-width: 40px; text-align: center; padding-top: 4px; }
+  .ep-info { flex: 1; }
+  .ep-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .ep-guest { font-family: 'EB Garamond', serif; font-style: italic; font-size: 14px; color: rgba(26,26,20,0.5); margin-bottom: 8px; }
+  .ep-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .ep-date { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(26,26,20,0.35); }
+  .ep-progress { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--fom-green); }
+
+  /* IDEAS */
+  .ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 16px; }
+  .idea-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; transition: border-color 0.15s; }
+  .idea-card:hover { border-color: var(--fom-green); }
+  .idea-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .idea-desc { font-family: 'EB Garamond', serif; font-size: 13px; color: rgba(26,26,20,0.6); line-height: 1.6; margin-bottom: 10px; font-style: italic; }
+
+  /* GUYBLE */
+  .bible-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .bible-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 20px 24px; }
+  .bible-card.full { grid-column: span 2; }
+  .bible-card-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fom-green); margin-bottom: 12px; }
+  .bible-read-text { font-family: 'EB Garamond', serif; font-size: 15px; line-height: 1.8; color: var(--ink); white-space: pre-wrap; min-height: 40px; }
+  .bible-read-text.empty { font-style: italic; color: rgba(26,26,20,0.3); }
+  .bible-textarea { width: 100%; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; font-family: 'EB Garamond', serif; font-size: 14px; color: var(--ink); outline: none; resize: vertical; min-height: 80px; line-height: 1.6; transition: border-color 0.2s; display: none; }
+  .bible-textarea:focus { border-color: var(--fom-green); }
+  .bible-textarea.visible { display: block; }
+
+  /* TABS / TOGGLE */
+  .view-toggle { display: flex; gap: 4px; background: rgba(26,26,20,0.06); border-radius: 4px; padding: 3px; }
+  .view-btn { background: none; border: none; padding: 5px 12px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(26,26,20,0.45); cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+  .view-btn.active { background: white; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .tab-row { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 20px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(26,26,20,0.4); cursor: pointer; transition: color 0.15s, border-color 0.15s; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--fom-green); border-bottom-color: var(--fom-green); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: rgba(26,26,20,0.3); }
+  .empty-state-title { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; margin-bottom: 6px; }
+  .empty-state-sub { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; }
+
+  @media (max-width: 768px) {
+    .app-header { padding: 0 16px; }
+    .main-content { padding: 20px 16px; }
+    .dash-grid { grid-template-columns: repeat(2,1fr); }
+    .dash-row { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.span2 { grid-column: span 1; }
+    .bible-grid { grid-template-columns: 1fr; }
+    .bible-card.full { grid-column: span 1; }
+    .kanban { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-bill">
+    <div class="bill-corner tl">F·O·M</div>
+    <div class="bill-corner tr">F·O·M</div>
+    <div class="bill-corner bl">EST. 2026</div>
+    <div class="bill-corner br">EST. 2026</div>
+    <div class="bill-top-text">YouTube Original Note · The Vault</div>
+    <div class="bill-title">Fear of Money</div>
+    <div class="bill-subtitle">GUY FRANKLIN · STUDIO VAULT</div>
+    <hr class="bill-divider">
+    <div class="bill-instruction">Present your note to enter the vault</div>
+    <input type="password" class="bill-input" id="pw-input" placeholder="••••••••••••••••" autocomplete="current-password">
+    <button class="bill-btn" id="login-btn" onclick="attemptLogin()">Enter the Vault</button>
+    <div class="bill-error" id="login-error"></div>
+    <div class="bill-serial">FRANKLIN, D.C. · FW I 9 · FEAR OF MONEY</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-logo">F<span>·</span>O<span>·</span>M</div>
+    <nav class="header-nav">
+      <button class="nav-btn active" onclick="showSection('dashboard',this)">Dashboard</button>
+      <button class="nav-btn" onclick="showSection('guests',this)">Guests</button>
+      <button class="nav-btn" onclick="showSection('episodes',this)">Episodes</button>
+      <button class="nav-btn" onclick="showSection('ideas',this)">Ideas</button>
+      <button class="nav-btn" onclick="showSection('bible',this)">Guyble</button>
+    </nav>
+    <div class="sync-indicator">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">—</span>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="section-dashboard" class="section active">
+      <div class="section-header">
+        <div><div class="section-title">The Vault</div><div class="section-sub">Fear of Money · Production Dashboard</div></div>
+      </div>
+      <div class="dash-grid" id="dash-stats"></div>
+      <div class="focus-card">
+        <div class="focus-label">This Week's Focus</div>
+        <div class="focus-text" id="focus-text">No focus set — what are you working on this week?</div>
+        <button class="focus-edit" onclick="editFocus()">Edit focus</button>
+      </div>
+      <div class="dash-row">
+        <div class="dash-card"><div class="dash-card-title">Upcoming Episodes</div><div id="dash-upcoming"></div></div>
+        <div class="dash-card"><div class="dash-card-title">Follow-up Required</div><div id="dash-followups"></div></div>
+      </div>
+    </div>
+
+    <!-- GUESTS -->
+    <div id="section-guests" class="section">
+      <div class="section-header">
+        <div><div class="section-title">Guest Pipeline</div><div class="section-sub">Potential · Confirmed · Published</div></div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="view-toggle">
+            <button class="view-btn active" id="g-list-btn" onclick="setGuestView('list')">List</button>
+            <button class="view-btn" id="g-kanban-btn" onclick="setGuestView('kanban')">Pipeline</button>
+          </div>
+          <button class="btn-primary" onclick="openGuestModal()">+ Add Guest</button>
+        </div>
+      </div>
+      <div id="guest-list-view">
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <input type="text" class="toolbar-search" placeholder="Search guests…" oninput="renderGuests(this.value,document.getElementById('guest-status-filter').value)">
+            <select class="toolbar-select" id="guest-status-filter" onchange="renderGuests(document.querySelector('.toolbar-search').value,this.value)">
+              <option value="">All statuses</option>
+              <option>Idea</option><option>Researching</option><option>Outreach Sent</option>
+              <option>In Conversation</option><option>Confirmed</option><option>Recorded</option>
+              <option>Published</option><option>Pass</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Category</th><th>Status</th><th>Why them</th><th>Follow-up</th><th>Actions</th></tr></thead>
+              <tbody id="guest-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="guest-kanban-view" style="display:none;"><div class="kanban" id="guest-kanban"></div></div>
+    </div>
+
+    <!-- EPISODES -->
+    <div id="section-episodes" class="section">
+      <div class="section-header">
+        <div><div class="section-title">Episodes</div><div class="section-sub">Production pipeline</div></div>
+        <button class="btn-primary" onclick="openEpisodeModal()">+ New Episode</button>
+      </div>
+      <div id="episodes-list"></div>
+    </div>
+
+    <!-- IDEAS -->
+    <div id="section-ideas" class="section">
+      <div class="section-header">
+        <div><div class="section-title">Ideas Bank</div><div class="section-sub">Concepts · Questions · Formats</div></div>
+      </div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="showTab('ideas-episodes',this)">Episode Ideas</button>
+        <button class="tab-btn" onclick="showTab('ideas-questions',this)">Questions Bank</button>
+      </div>
+      <div id="ideas-episodes" class="tab-panel active">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;"><button class="btn-primary" onclick="openIdeaModal('episode')">+ Add Idea</button></div>
+        <div class="ideas-grid" id="ideas-ep-grid"></div>
+      </div>
+      <div id="ideas-questions" class="tab-panel">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;"><button class="btn-primary" onclick="openIdeaModal('question')">+ Add Question</button></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Question</th><th>Category</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="questions-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUYBLE -->
+    <div id="section-bible" class="section">
+      <div class="section-header">
+        <div><div class="section-title">The Guyble</div><div class="section-sub">Show bible · The FOM reference document</div></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-ghost" id="bible-edit-btn" onclick="toggleBibleEdit()">Edit</button>
+          <button class="btn-primary" id="bible-save-btn" style="display:none;" onclick="saveBible()">Save</button>
+        </div>
+      </div>
+      <div class="bible-grid">
+        <div class="bible-card full"><div class="bible-card-title">Mission Statement</div><div class="bible-read-text" id="read-mission" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-mission" placeholder="What is Fear of Money, in one or two sentences?"></textarea></div>
+        <div class="bible-card"><div class="bible-card-title">What FOM Is</div><div class="bible-read-text" id="read-is" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-is" placeholder="The show is about…" style="min-height:120px;"></textarea></div>
+        <div class="bible-card"><div class="bible-card-title">What FOM Is Not</div><div class="bible-read-text" id="read-isnot" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-isnot" placeholder="The show will never be…" style="min-height:120px;"></textarea></div>
+        <div class="bible-card"><div class="bible-card-title">Tone of Voice</div><div class="bible-read-text" id="read-tone" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-tone" placeholder="How does the show sound and feel?" style="min-height:120px;"></textarea></div>
+        <div class="bible-card"><div class="bible-card-title">Guest Criteria</div><div class="bible-read-text" id="read-guest-criteria" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-guest-criteria" placeholder="Who makes a great FOM guest?" style="min-height:120px;"></textarea></div>
+        <div class="bible-card full"><div class="bible-card-title">Recurring Show Elements</div><div class="bible-read-text" id="read-elements" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-elements" placeholder="Things that happen every episode…"></textarea></div>
+        <div class="bible-card full"><div class="bible-card-title">Visual & Aesthetic References</div><div class="bible-read-text" id="read-visual" onclick="quickEditBible()"></div><textarea class="bible-textarea" id="bible-visual" placeholder="Links, descriptions, references that define how the show looks…"></textarea></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div id="guest-modal" style="display:none;" class="modal-overlay" onclick="closeOnOverlay(event,'guest-modal')">
+  <div class="modal">
+    <div class="modal-title" id="guest-modal-title">New Guest</div>
+    <button class="modal-close" onclick="closeModal('guest-modal')">✕</button>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="g-name" placeholder="Guest name"></div>
+      <div class="form-group"><label class="form-label">Category <span style="opacity:0.4;font-size:8px;">— type to add your own</span></label><div class="single-tag-wrap" id="g-category-wrap"></div></div>
+      <div class="form-group span2"><label class="form-label">Why them?</label><textarea class="form-textarea" id="g-why" placeholder="What angle do they represent?"></textarea></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="g-email" placeholder="email@example.com"></div>
+      <div class="form-group"><label class="form-label">Instagram / LinkedIn</label><input type="text" class="form-input" id="g-social" placeholder="@handle or URL"></div>
+      <div class="form-group"><label class="form-label">Connection Path</label><input type="text" class="form-input" id="g-connection" placeholder="How did you find them?"></div>
+      <div class="form-group"><label class="form-label">Status <span style="opacity:0.4;font-size:8px;">— type to add your own</span></label><div class="single-tag-wrap" id="g-status-wrap"></div></div>
+      <div class="form-group"><label class="form-label">Last Contact</label><input type="date" class="form-input" id="g-last-contact"></div>
+      <div class="form-group"><label class="form-label">Follow-up Date</label><input type="date" class="form-input" id="g-followup"></div>
+      <div class="form-group span2"><label class="form-label">Notes</label><textarea class="form-textarea" id="g-notes" placeholder="Anything else…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-ghost" onclick="closeModal('guest-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveGuest()">Save Guest</button>
+    </div>
+  </div>
+</div>
+
+<div id="episode-modal" style="display:none;" class="modal-overlay" onclick="closeOnOverlay(event,'episode-modal')">
+  <div class="modal">
+    <div class="modal-title" id="ep-modal-title">New Episode</div>
+    <button class="modal-close" onclick="closeModal('episode-modal')">✕</button>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Episode #</label><input type="number" class="form-input" id="ep-number" placeholder="1"></div>
+      <div class="form-group"><label class="form-label">Status</label><div class="single-tag-wrap" id="ep-status-wrap"></div></div>
+      <div class="form-group span2"><label class="form-label">Working Title</label><input type="text" class="form-input" id="ep-title" placeholder="Episode title"></div>
+      <div class="form-group"><label class="form-label">Guest Name</label><input type="text" class="form-input" id="ep-guest" placeholder="Guest name"></div>
+      <div class="form-group"><label class="form-label">Format</label><div class="single-tag-wrap" id="ep-format-wrap"></div></div>
+      <div class="form-group"><label class="form-label">Record Date</label><input type="date" class="form-input" id="ep-record-date"></div>
+      <div class="form-group"><label class="form-label">Target Publish Date</label><input type="date" class="form-input" id="ep-publish-date"></div>
+      <div class="form-group span2"><label class="form-label">YouTube URL (once live)</label><input type="url" class="form-input" id="ep-url" placeholder="https://youtube.com/..."></div>
+      <div class="form-group span2"><label class="form-label">Notes</label><textarea class="form-textarea" id="ep-notes" placeholder="Anything relevant to this episode…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-ghost" onclick="closeModal('episode-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveEpisode()">Save Episode</button>
+    </div>
+  </div>
+</div>
+
+<div id="idea-modal" style="display:none;" class="modal-overlay" onclick="closeOnOverlay(event,'idea-modal')">
+  <div class="modal">
+    <div class="modal-title" id="idea-modal-title">New Idea</div>
+    <button class="modal-close" onclick="closeModal('idea-modal')">✕</button>
+    <input type="hidden" id="idea-type">
+    <div class="form-grid" id="idea-form-fields"></div>
+    <div class="form-actions">
+      <button class="btn-ghost" onclick="closeModal('idea-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveIdea()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="ep-detail-modal" style="display:none;" class="modal-overlay" onclick="closeOnOverlay(event,'ep-detail-modal')">
+  <div class="modal" style="width:min(720px,100%);">
+    <div class="modal-title" id="ep-detail-title">Episode Detail</div>
+    <button class="modal-close" onclick="closeModal('ep-detail-modal')">✕</button>
+    <div id="ep-detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ── SAFE KEY ──────────────────────────────────────────────────────────────
+function safeKey(str) { return str.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+// ── DEFAULT OPTIONS ───────────────────────────────────────────────────────
+const DEFAULT_OPTS = {
+  guestCategory: ['Psychology','Investor','Lived Experience','Family / Relationships','Industry / Business','Creativity / Arts','Journalist','Political','Academic','Other'],
+  guestStatus: ['Idea','Researching','Outreach Sent','In Conversation','Confirmed','Recorded','Published','Pass'],
+  epStatus: ['Confirmed','Prepped','Recorded','Editing','Ready','Live'],
+  epFormat: ['In Person','Remote'],
+  ideaStatus: ['Raw','Developing','Ready to Pitch'],
+  questionCategory: ['Opener','Deep Dive','Psychology','Money Mechanics','Closing']
+};
+
+let sessionToken = null;
+
+let state = {
+  guests: [], episodes: [], ideas: [], questions: [],
+  bible: {}, focus: '',
+  opts: JSON.parse(JSON.stringify(DEFAULT_OPTS)),
+  editingGuest: null, editingEpisode: null,
+  guestView: 'list', bibleEditing: false
+};
+
+const CHECKLIST_TEMPLATE = {
+  preRecord: ['Interview questions written','Research brief done','Guest tech check complete - remote','Location confirmed','Studio crew briefed','Backup recording device ready'],
+  recordDay: ['Primary camera ready','Audio checked','Lighting set','Set and background dressed','Intro filmed','Raw files backed up'],
+  post: ['Edit complete','Colour grade done','Audio mix done','Thumbnail created','Title and description written','Captions and subtitles done','End screens and cards added','Scheduled on YouTube']
+};
+
+function saveLocal() { localStorage.setItem('fom-state', JSON.stringify(state)); }
+
+function loadLocal() {
+  const raw = localStorage.getItem('fom-state');
+  if (raw) {
+    try {
+      const loaded = JSON.parse(raw);
+      state = { ...state, ...loaded };
+      if (!state.opts) state.opts = JSON.parse(JSON.stringify(DEFAULT_OPTS));
+      Object.keys(DEFAULT_OPTS).forEach(k => { if (!state.opts[k]) state.opts[k] = [...DEFAULT_OPTS[k]]; });
+    } catch(e) {}
+  }
+}
+
+// ── SYNC ──────────────────────────────────────────────────────────────────
+let syncTimeout = null;
+
+function setSyncStatus(status, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (!dot || !lbl) return;
+  dot.className = 'sync-dot' + (status ? ' ' + status : '');
+  lbl.textContent = label;
+}
+
+function scheduleSyncToSheets() {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(syncToSheets, 2000);
+}
+
+async function syncToSheets() {
+  if (!sessionToken) return;
+  setSyncStatus('syncing', 'Syncing…');
+  try {
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+      body: JSON.stringify({ guests: state.guests, episodes: state.episodes, ideas: state.ideas, questions: state.questions })
+    });
+    if (res.ok) {
+      const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+      setSyncStatus('synced', 'Synced ' + now);
+      setTimeout(() => setSyncStatus('', '—'), 5000);
+    } else {
+      setSyncStatus('error', 'Sync failed');
+    }
+  } catch(e) {
+    setSyncStatus('error', 'Offline');
+  }
+}
+
+function saveAndSync() {
+  saveLocal();
+  scheduleSyncToSheets();
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+async function attemptLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  if (!pw) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  errEl.textContent = '';
+
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+
+    if (data.success && data.token) {
+      sessionToken = data.token;
+      localStorage.setItem('fom-token', sessionToken);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadLocal();
+      renderAll();
+      syncToSheets();
+    } else {
+      errEl.textContent = 'Incorrect. The vault remains sealed.';
+      document.getElementById('pw-input').value = '';
+      btn.disabled = false;
+      btn.textContent = 'Enter the Vault';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error — try again.';
+    btn.disabled = false;
+    btn.textContent = 'Enter the Vault';
+  }
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); });
+
+// Check if we have a stored token on load (so he doesn't re-login every time)
+window.addEventListener('load', async () => {
+  const stored = localStorage.getItem('fom-token');
+  if (stored) {
+    // Verify it's still valid
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: '__token_check__', token: stored })
+      });
+      // We'll just try — if the token is valid we bypass login
+      // For simplicity, re-use the token and let sync fail if it expired
+      sessionToken = stored;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadLocal();
+      renderAll();
+    } catch(e) {
+      // Stay on login screen
+    }
+  }
+});
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'guests') renderGuests();
+  if (id === 'episodes') renderEpisodes();
+  if (id === 'ideas') { renderIdeas(); renderQuestions(); }
+  if (id === 'bible') renderBible();
+}
+
+function renderAll() { renderDashboard(); renderGuests(); renderEpisodes(); renderIdeas(); renderQuestions(); renderBible(); }
+
+// ── TAG PICKER ────────────────────────────────────────────────────────────
+function buildSingleTagInput(containerId, optKey, currentValue, placeholder) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  let selectedValue = currentValue || '';
+  let suggestionsEl = null;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tag-input-wrap';
+
+  const pill = document.createElement('span');
+  pill.className = 'tag-pill';
+  pill.style.display = selectedValue ? 'flex' : 'none';
+  const pillText = document.createElement('span');
+  pillText.textContent = selectedValue;
+  const pillRemove = document.createElement('button');
+  pillRemove.className = 'tag-pill-remove';
+  pillRemove.textContent = '×';
+  pillRemove.onclick = e => { e.stopPropagation(); selectedValue = ''; pill.style.display = 'none'; input.style.display = ''; input.focus(); container.dataset.value = ''; };
+  pill.appendChild(pillText); pill.appendChild(pillRemove);
+
+  const input = document.createElement('input');
+  input.className = 'tag-input-field';
+  input.placeholder = selectedValue ? '' : (placeholder || 'Select or type…');
+  input.style.display = selectedValue ? 'none' : '';
+
+  wrap.appendChild(pill); wrap.appendChild(input);
+  container.appendChild(wrap);
+  container.dataset.value = selectedValue;
+
+  function showSugs(q) {
+    hideSugs();
+    const opts = state.opts[optKey] || [];
+    const filtered = q ? opts.filter(o => o.toLowerCase().includes(q.toLowerCase())) : opts;
+    suggestionsEl = document.createElement('div');
+    suggestionsEl.className = 'tag-suggestions';
+    const rect = wrap.getBoundingClientRect();
+    suggestionsEl.style.cssText = `top:${rect.bottom+4}px;left:${rect.left}px;width:${rect.width}px;`;
+    filtered.forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'tag-suggestion-item';
+      item.textContent = opt;
+      item.onmousedown = e => { e.preventDefault(); selectVal(opt); };
+      suggestionsEl.appendChild(item);
+    });
+    const trimmed = q.trim();
+    if (trimmed && !opts.find(o => o.toLowerCase() === trimmed.toLowerCase())) {
+      const ci = document.createElement('div');
+      ci.className = 'tag-suggestion-item create';
+      ci.textContent = '+ Add "' + trimmed + '"';
+      ci.onmousedown = e => { e.preventDefault(); if (!state.opts[optKey].includes(trimmed)) { state.opts[optKey].push(trimmed); saveLocal(); } selectVal(trimmed); };
+      suggestionsEl.appendChild(ci);
+    }
+    if (suggestionsEl.children.length > 0) document.body.appendChild(suggestionsEl);
+  }
+
+  function hideSugs() { if (suggestionsEl && suggestionsEl.parentNode) suggestionsEl.parentNode.removeChild(suggestionsEl); suggestionsEl = null; }
+
+  function selectVal(val) {
+    selectedValue = val; pillText.textContent = val; pill.style.display = 'flex';
+    input.style.display = 'none'; input.value = ''; container.dataset.value = val; hideSugs();
+  }
+
+  input.addEventListener('focus', () => showSugs(input.value));
+  input.addEventListener('input', () => showSugs(input.value));
+  input.addEventListener('blur', () => setTimeout(hideSugs, 150));
+  wrap.addEventListener('click', () => { if (!selectedValue) { input.focus(); showSugs(''); } });
+}
+
+// ── BADGE ─────────────────────────────────────────────────────────────────
+function statusBadge(s, prefix) {
+  const map = { 'idea':'badge-idea','researching':'badge-research','outreach sent':'badge-outreach','in conversation':'badge-conversation','confirmed':'badge-confirmed','recorded':'badge-recorded','published':'badge-published','pass':'badge-pass','ep-confirmed':'badge-ep-confirmed','ep-prepped':'badge-ep-prepped','ep-recorded':'badge-ep-recorded','ep-editing':'badge-ep-editing','ep-ready':'badge-ep-ready','ep-live':'badge-ep-live','raw':'badge-raw','developing':'badge-developing','ready to pitch':'badge-ready','ready':'badge-ready','opener':'badge-outreach','deep dive':'badge-conversation','psychology':'badge-idea','money mechanics':'badge-recorded','closing':'badge-research' };
+  const key = prefix ? 'ep-' + s.toLowerCase() : s.toLowerCase();
+  return `<span class="badge ${map[key]||map[s.toLowerCase()]||'badge-generic'}">${s}</span>`;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const upcoming = state.episodes.filter(e => e.recordDate && new Date(e.recordDate+'T00:00:00') >= new Date()).sort((a,b) => new Date(a.recordDate)-new Date(b.recordDate)).slice(0,3);
+  const followups = state.guests.filter(g => g.followUpDate && new Date(g.followUpDate+'T00:00:00') <= new Date() && !['Published','Pass','Recorded'].includes(g.status));
+  const inProd = state.episodes.filter(e => ['Confirmed','Prepped','Recorded','Editing','Ready'].includes(e.status));
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Guests</div><div class="stat-value">${state.guests.length}</div><div class="stat-sub">in the pipeline</div></div>
+    <div class="stat-card"><div class="stat-label">Episodes</div><div class="stat-value">${state.episodes.length}</div><div class="stat-sub">${inProd.length} in production</div></div>
+    <div class="stat-card"><div class="stat-label">Follow-ups Due</div><div class="stat-value ${followups.length>0?'stat-accent':''}">${followups.length}</div><div class="stat-sub">${followups.length>0?'need attention':'all clear'}</div></div>
+    <div class="stat-card"><div class="stat-label">Ideas Bank</div><div class="stat-value">${state.ideas.length+state.questions.length}</div><div class="stat-sub">${state.ideas.length} ideas · ${state.questions.length} questions</div></div>`;
+  document.getElementById('focus-text').textContent = state.focus || 'No focus set — what are you working on this week?';
+  document.getElementById('dash-upcoming').innerHTML = upcoming.length===0 ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-state-sub">No upcoming recordings</div></div>' : upcoming.map(e=>`<div class="dash-item"><div><div class="dash-item-name">${e.title||'Untitled'}</div><div class="dash-item-meta">${e.guest||'—'}</div></div><div style="text-align:right;">${statusBadge(e.status,'ep')}<div class="dash-item-meta" style="margin-top:4px;">${formatDate(e.recordDate)}</div></div></div>`).join('');
+  document.getElementById('dash-followups').innerHTML = followups.length===0 ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-state-sub">No follow-ups overdue</div></div>' : followups.slice(0,5).map(g=>`<div class="dash-item"><div><div class="dash-item-name">${g.name}</div><div class="dash-item-meta">${g.status}</div></div><div style="text-align:right;"><div class="dash-item-meta" style="color:#c0392b;">${formatDate(g.followUpDate)}</div></div></div>`).join('');
+}
+
+function editFocus() { const v=prompt('This week\'s focus:',state.focus); if(v!==null){state.focus=v;saveAndSync();renderDashboard();} }
+
+// ── GUESTS ────────────────────────────────────────────────────────────────
+function renderGuests(search='',statusFilter='') {
+  let guests=state.guests;
+  if(search) guests=guests.filter(g=>g.name.toLowerCase().includes(search.toLowerCase())||(g.why||'').toLowerCase().includes(search.toLowerCase()));
+  if(statusFilter) guests=guests.filter(g=>g.status===statusFilter);
+  if(state.guestView==='list') {
+    const tbody=document.getElementById('guest-table-body');
+    if(!tbody) return;
+    tbody.innerHTML=guests.length===0?`<tr><td colspan="6"><div class="empty-state"><div class="empty-state-title">No guests yet</div><div class="empty-state-sub">Add your first potential guest</div></div></td></tr>`:guests.map(g=>{const idx=state.guests.indexOf(g);return`<tr><td class="name-cell">${g.name}</td><td><span style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(26,26,20,0.5);">${g.category||'—'}</span></td><td>${statusBadge(g.status||'Idea')}</td><td class="notes-cell">${g.why||'—'}</td><td class="meta-cell">${g.followUpDate?formatDate(g.followUpDate):'—'}</td><td><div style="display:flex;gap:6px;"><button class="btn-ghost" style="padding:4px 10px;font-size:9px;" onclick="openGuestModal(${idx})">Edit</button><button class="btn-danger" onclick="deleteGuest(${idx})">✕</button></div></td></tr>`;}).join('');
+  } else {
+    const kanban=document.getElementById('guest-kanban');
+    if(!kanban) return;
+    kanban.innerHTML=state.opts.guestStatus.map(s=>{const items=guests.filter(g=>g.status===s);return`<div class="kanban-col"><div class="kanban-col-title">${s}<span class="kanban-count">${items.length}</span></div>${items.length===0?'<div style="font-family:\'Space Mono\',monospace;font-size:9px;color:rgba(26,26,20,0.2);text-align:center;padding:12px 0;">—</div>':''}${items.map(g=>`<div class="kanban-card" onclick="openGuestModal(${state.guests.indexOf(g)})"><div class="kanban-card-name">${g.name}</div><div class="kanban-card-meta">${g.category||''}</div></div>`).join('')}</div>`;}).join('');
+  }
+}
+
+function setGuestView(v) { state.guestView=v; document.getElementById('guest-list-view').style.display=v==='list'?'block':'none'; document.getElementById('guest-kanban-view').style.display=v==='kanban'?'block':'none'; document.getElementById('g-list-btn').classList.toggle('active',v==='list'); document.getElementById('g-kanban-btn').classList.toggle('active',v==='kanban'); renderGuests(); }
+
+function openGuestModal(idx) {
+  state.editingGuest=idx!==undefined?idx:null;
+  const g=idx!==undefined?state.guests[idx]:{};
+  document.getElementById('guest-modal-title').textContent=idx!==undefined?'Edit Guest':'New Guest';
+  document.getElementById('g-name').value=g.name||''; document.getElementById('g-why').value=g.why||''; document.getElementById('g-email').value=g.email||''; document.getElementById('g-social').value=g.social||''; document.getElementById('g-connection').value=g.connection||''; document.getElementById('g-last-contact').value=g.lastContact||''; document.getElementById('g-followup').value=g.followUpDate||''; document.getElementById('g-notes').value=g.notes||'';
+  document.getElementById('guest-modal').style.display='flex';
+  setTimeout(()=>{ buildSingleTagInput('g-category-wrap','guestCategory',g.category||'','Category…'); buildSingleTagInput('g-status-wrap','guestStatus',g.status||'Idea','Status…'); },10);
+}
+
+function saveGuest() {
+  const g={name:document.getElementById('g-name').value.trim()||'Unnamed Guest',category:document.getElementById('g-category-wrap').dataset.value||'',why:document.getElementById('g-why').value,email:document.getElementById('g-email').value,social:document.getElementById('g-social').value,connection:document.getElementById('g-connection').value,status:document.getElementById('g-status-wrap').dataset.value||'Idea',lastContact:document.getElementById('g-last-contact').value,followUpDate:document.getElementById('g-followup').value,notes:document.getElementById('g-notes').value};
+  if(state.editingGuest!==null) state.guests[state.editingGuest]=g; else state.guests.push(g);
+  saveAndSync(); closeModal('guest-modal'); renderGuests(); renderDashboard();
+}
+
+function deleteGuest(idx) { if(confirm('Remove '+state.guests[idx].name+'?')){ state.guests.splice(idx,1); saveAndSync(); renderGuests(); renderDashboard(); } }
+
+// ── EPISODES ──────────────────────────────────────────────────────────────
+function renderEpisodes() {
+  const el=document.getElementById('episodes-list');
+  if(!el) return;
+  if(state.episodes.length===0){el.innerHTML=`<div class="empty-state" style="padding:60px;"><div class="empty-state-title">No episodes yet</div><div class="empty-state-sub">Create your first episode to start the production pipeline</div></div>`;return;}
+  const sorted=[...state.episodes].sort((a,b)=>(b.number||0)-(a.number||0));
+  el.innerHTML=sorted.map(ep=>{const idx=state.episodes.indexOf(ep);const checklist=ep.checklist||{};const allItems=[...CHECKLIST_TEMPLATE.preRecord,...CHECKLIST_TEMPLATE.recordDay,...CHECKLIST_TEMPLATE.post];const done=allItems.filter(i=>checklist[safeKey(i)]).length;const pct=Math.round(done/allItems.length*100);return`<div class="episode-card" onclick="openEpisodeDetail(${idx})"><div class="ep-number">${ep.number||'?'}</div><div class="ep-info"><div class="ep-title">${ep.title||'Untitled Episode'}</div><div class="ep-guest">with ${ep.guest||'Guest TBC'} · ${ep.format||'In Person'}</div><div class="ep-meta">${statusBadge(ep.status||'Confirmed','ep')}<span class="ep-date">${ep.recordDate?'Record: '+formatDate(ep.recordDate):''}</span><span class="ep-date">${ep.publishDate?'Publish: '+formatDate(ep.publishDate):''}</span><span class="ep-progress">${pct}% complete</span></div><div class="progress-bar-wrap" style="margin-top:10px;margin-bottom:0;"><div class="progress-bar-fill" style="width:${pct}%"></div></div></div><div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()"><button class="btn-ghost" style="padding:4px 10px;font-size:9px;" onclick="openEpisodeModal(${idx})">Edit</button><button class="btn-danger" onclick="deleteEpisode(${idx})">✕</button></div></div>`;}).join('');
+}
+
+function openEpisodeModal(idx) {
+  state.editingEpisode=idx!==undefined?idx:null;
+  const ep=idx!==undefined?state.episodes[idx]:{};
+  document.getElementById('ep-modal-title').textContent=idx!==undefined?'Edit Episode':'New Episode';
+  document.getElementById('ep-number').value=ep.number||''; document.getElementById('ep-title').value=ep.title||''; document.getElementById('ep-guest').value=ep.guest||''; document.getElementById('ep-record-date').value=ep.recordDate||''; document.getElementById('ep-publish-date').value=ep.publishDate||''; document.getElementById('ep-url').value=ep.url||''; document.getElementById('ep-notes').value=ep.notes||'';
+  document.getElementById('episode-modal').style.display='flex';
+  setTimeout(()=>{ buildSingleTagInput('ep-status-wrap','epStatus',ep.status||'Confirmed','Status…'); buildSingleTagInput('ep-format-wrap','epFormat',ep.format||'In Person','Format…'); },10);
+}
+
+function saveEpisode() {
+  const ep={number:parseInt(document.getElementById('ep-number').value)||state.episodes.length+1,status:document.getElementById('ep-status-wrap').dataset.value||'Confirmed',title:document.getElementById('ep-title').value.trim(),guest:document.getElementById('ep-guest').value.trim(),format:document.getElementById('ep-format-wrap').dataset.value||'In Person',recordDate:document.getElementById('ep-record-date').value,publishDate:document.getElementById('ep-publish-date').value,url:document.getElementById('ep-url').value,notes:document.getElementById('ep-notes').value,checklist:state.editingEpisode!==null?(state.episodes[state.editingEpisode].checklist||{}):{}};
+  if(state.editingEpisode!==null) state.episodes[state.editingEpisode]=ep; else state.episodes.push(ep);
+  saveAndSync(); closeModal('episode-modal'); renderEpisodes(); renderDashboard();
+}
+
+function deleteEpisode(idx) { if(confirm('Delete episode '+(state.episodes[idx].number||'')+'?')){ state.episodes.splice(idx,1); saveAndSync(); renderEpisodes(); renderDashboard(); } }
+
+function openEpisodeDetail(idx) {
+  const ep=state.episodes[idx]; const checklist=ep.checklist||{};
+  function clSection(title,items){return`<div class="checklist-section"><div class="checklist-section-title">${title}</div>${items.map(item=>{const key=safeKey(item);const checked=!!checklist[key];return`<div class="checklist-item ${checked?'done':''}" id="cliwrap_${idx}_${key}"><input type="checkbox" id="cli_${idx}_${key}" ${checked?'checked':''} onchange="toggleChecklist(${idx},'${key}',this.checked)"><label for="cli_${idx}_${key}">${item}</label></div>`;}).join('')}</div>`;}
+  const allItems=[...CHECKLIST_TEMPLATE.preRecord,...CHECKLIST_TEMPLATE.recordDay,...CHECKLIST_TEMPLATE.post];
+  const done=allItems.filter(i=>checklist[safeKey(i)]).length; const pct=Math.round(done/allItems.length*100);
+  document.getElementById('ep-detail-title').textContent=`Ep ${ep.number}: ${ep.title||'Untitled'}`;
+  document.getElementById('ep-detail-content').innerHTML=`<div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">${statusBadge(ep.status||'Confirmed','ep')}<span style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(26,26,20,0.4);">with ${ep.guest||'TBC'}</span>${ep.url?`<a href="${ep.url}" target="_blank" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--fom-green);">View on YouTube ↗</a>`:''}</div><div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(26,26,20,0.4);margin-bottom:4px;">Production Progress — ${pct}%</div><div class="progress-bar-wrap"><div class="progress-bar-fill" id="ep_prog_${idx}" style="width:${pct}%"></div></div>${clSection('Pre-Record',CHECKLIST_TEMPLATE.preRecord)}${clSection('Record Day',CHECKLIST_TEMPLATE.recordDay)}${clSection('Post-Production',CHECKLIST_TEMPLATE.post)}${ep.notes?`<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-style:italic;font-size:13px;color:rgba(26,26,20,0.5);">${ep.notes}</div>`:''}`;
+  document.getElementById('ep-detail-modal').style.display='flex';
+}
+
+function toggleChecklist(epIdx,key,val) {
+  if(!state.episodes[epIdx].checklist) state.episodes[epIdx].checklist={};
+  state.episodes[epIdx].checklist[key]=val;
+  const wrap=document.getElementById('cliwrap_'+epIdx+'_'+key);
+  if(wrap) wrap.classList.toggle('done',val);
+  const allItems=[...CHECKLIST_TEMPLATE.preRecord,...CHECKLIST_TEMPLATE.recordDay,...CHECKLIST_TEMPLATE.post];
+  const done=allItems.filter(i=>state.episodes[epIdx].checklist[safeKey(i)]).length;
+  const pct=Math.round(done/allItems.length*100);
+  const bar=document.getElementById('ep_prog_'+epIdx);
+  if(bar) bar.style.width=pct+'%';
+  saveAndSync(); renderEpisodes();
+}
+
+// ── IDEAS ─────────────────────────────────────────────────────────────────
+function openIdeaModal(type) {
+  document.getElementById('idea-type').value=type;
+  if(type==='episode'){
+    document.getElementById('idea-modal-title').textContent='New Episode Idea';
+    document.getElementById('idea-form-fields').innerHTML=`<div class="form-group span2"><label class="form-label">Idea Title</label><input type="text" class="form-input" id="idea-title" placeholder="Working title"></div><div class="form-group span2"><label class="form-label">Description</label><textarea class="form-textarea" id="idea-desc" placeholder="What's this idea about?"></textarea></div><div class="form-group span2"><label class="form-label">Why it fits FOM</label><textarea class="form-textarea" id="idea-why" placeholder="Why does this belong on the show?"></textarea></div><div class="form-group"><label class="form-label">Source / Inspiration</label><input type="text" class="form-input" id="idea-source" placeholder="Where did this come from?"></div><div class="form-group"><label class="form-label">Status</label><div class="single-tag-wrap" id="idea-status-wrap"></div></div>`;
+    setTimeout(()=>buildSingleTagInput('idea-status-wrap','ideaStatus','Raw','Status…'),10);
+  } else {
+    document.getElementById('idea-modal-title').textContent='New Question';
+    document.getElementById('idea-form-fields').innerHTML=`<div class="form-group span2"><label class="form-label">Question</label><textarea class="form-textarea" id="idea-title" placeholder="The question text…" style="min-height:100px;"></textarea></div><div class="form-group"><label class="form-label">Category</label><div class="single-tag-wrap" id="idea-status-wrap"></div></div><div class="form-group"><label class="form-label">Notes on when to use</label><input type="text" class="form-input" id="idea-source" placeholder="Context for this question…"></div>`;
+    setTimeout(()=>buildSingleTagInput('idea-status-wrap','questionCategory','Opener','Category…'),10);
+  }
+  document.getElementById('idea-modal').style.display='flex';
+}
+
+function saveIdea() {
+  const type=document.getElementById('idea-type').value;
+  if(type==='episode') state.ideas.push({title:document.getElementById('idea-title').value.trim()||'Untitled Idea',desc:document.getElementById('idea-desc').value,why:document.getElementById('idea-why').value,source:document.getElementById('idea-source').value,status:document.getElementById('idea-status-wrap').dataset.value||'Raw'});
+  else state.questions.push({text:document.getElementById('idea-title').value.trim()||'Untitled Question',category:document.getElementById('idea-status-wrap').dataset.value||'Opener',notes:document.getElementById('idea-source').value});
+  saveAndSync(); closeModal('idea-modal'); renderIdeas(); renderQuestions(); renderDashboard();
+}
+
+function renderIdeas() {
+  const grid=document.getElementById('ideas-ep-grid');
+  if(!grid) return;
+  grid.innerHTML=state.ideas.length===0?`<div class="empty-state" style="grid-column:1/-1;padding:48px;"><div class="empty-state-title">No ideas yet</div><div class="empty-state-sub">Add episode concepts and topics to explore</div></div>`:state.ideas.map((idea,idx)=>`<div class="idea-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;"><div class="idea-title">${idea.title}</div>${statusBadge(idea.status||'Raw')}</div><div class="idea-desc">${idea.desc||''}</div>${idea.why?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--fom-green);margin-bottom:8px;">${idea.why}</div>`:''} ${idea.source?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:rgba(26,26,20,0.35);">via ${idea.source}</div>`:''}<div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);"><button class="btn-danger" onclick="deleteIdea(${idx})">Remove</button></div></div>`).join('');
+}
+
+function deleteIdea(idx) { state.ideas.splice(idx,1); saveAndSync(); renderIdeas(); renderDashboard(); }
+
+function renderQuestions() {
+  const tbody=document.getElementById('questions-body');
+  if(!tbody) return;
+  tbody.innerHTML=state.questions.length===0?`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-title">No questions yet</div><div class="empty-state-sub">Build a bank of questions to draw from each episode</div></div></td></tr>`:state.questions.map((q,idx)=>`<tr><td style="font-style:italic;font-size:14px;max-width:320px;">"${q.text}"</td><td>${statusBadge(q.category||'Opener')}</td><td class="meta-cell">${q.notes||'—'}</td><td><button class="btn-danger" onclick="deleteQuestion(${idx})">✕</button></td></tr>`).join('');
+}
+
+function deleteQuestion(idx) { state.questions.splice(idx,1); saveAndSync(); renderQuestions(); renderDashboard(); }
+
+// ── GUYBLE ────────────────────────────────────────────────────────────────
+const BIBLE_KEYS=['mission','is','isnot','tone','guest-criteria','elements','visual'];
+
+function renderBible() {
+  const b=state.bible;
+  BIBLE_KEYS.forEach(key=>{
+    const readEl=document.getElementById('read-'+key);
+    const textEl=document.getElementById('bible-'+key);
+    const val=b[key]||'';
+    if(readEl){readEl.textContent=val||(state.bibleEditing?'':'—');readEl.classList.toggle('empty',!val);readEl.style.display=state.bibleEditing?'none':'block';}
+    if(textEl){textEl.value=val;textEl.classList.toggle('visible',!!state.bibleEditing);}
+  });
+  document.getElementById('bible-edit-btn').style.display=state.bibleEditing?'none':'';
+  document.getElementById('bible-save-btn').style.display=state.bibleEditing?'':'none';
+}
+
+function toggleBibleEdit() { state.bibleEditing=true; renderBible(); }
+function quickEditBible() { if(!state.bibleEditing) toggleBibleEdit(); }
+
+function saveBible() {
+  BIBLE_KEYS.forEach(key=>{ const el=document.getElementById('bible-'+key); if(el) state.bible[key]=el.value; });
+  state.bibleEditing=false;
+  saveAndSync(); renderBible();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function showTab(id,btn) { document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function closeOnOverlay(e,id) { if(e.target===document.getElementById(id)) closeModal(id); }
+
+// ── SEED ──────────────────────────────────────────────────────────────────
+if(!localStorage.getItem('fom-state')) {
+  state.episodes.push({number:1,title:'The First Dollar',guest:'Guy Franklin Sr.',format:'In Person',status:'Live',recordDate:'2026-01-15',publishDate:'2026-01-22',url:'',notes:'The very first episode — with Dad. The one that started it all.',checklist:{}});
+  state.bible.mission='Fear of Money explores why money — despite being everywhere — remains so misunderstood, feared, and personal. One guest. One conversation. Real talk.';
+  saveLocal();
+}
+</script>
+</body>
+</html>
