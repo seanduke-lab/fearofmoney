@@ -65,7 +65,10 @@ async function getAccessToken(clientEmail, privateKey) {
     body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
   });
 
-  const tokenData = await tokenRes.json();
+const tokenData = await tokenRes.json();
+  if (!tokenData.access_token) {
+    throw new Error('No access token: ' + JSON.stringify(tokenData));
+  }
   return tokenData.access_token;
 }
 
