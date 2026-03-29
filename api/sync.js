@@ -74,9 +74,7 @@ const tokenData = await tokenRes.json();
 
 // Clear a sheet tab and rewrite it with headers + rows
 async function writeSheet(accessToken, spreadsheetId, sheetName, headers, rows) {
-  const range = `${sheetName}!A1`;
   const values = [headers, ...rows];
-
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}!A1:Z1000?valueInputOption=RAW`,
     {
@@ -88,7 +86,11 @@ async function writeSheet(accessToken, spreadsheetId, sheetName, headers, rows) 
       body: JSON.stringify({ range: `${sheetName}!A1`, majorDimension: 'ROWS', values }),
     }
   );
-  return res.ok;
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Sheet "${sheetName}" failed: ${errText}`);
+  }
+  return true;
 }
 
 export default async function handler(req) {
