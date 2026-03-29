@@ -83,7 +83,7 @@ async function writeSheet(accessToken, spreadsheetId, sheetName, headers, rows) 
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ range: `${sheetName}!A1`, majorDimension: 'ROWS', values }),
+      body: JSON.stringify({ range: `${sheetName}!A1:Z1000`, majorDimension: 'ROWS', values }),
     }
   );
   if (!res.ok) {
