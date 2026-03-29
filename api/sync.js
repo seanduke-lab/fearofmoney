@@ -34,11 +34,9 @@ async function getAccessToken(clientEmail, privateKey) {
   const payloadB64 = encode(payload);
   const signingInput = `${headerB64}.${payloadB64}`;
 
-  // Import the private key
-  const pemContents = privateKey
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\n/g, '');
+  // Normalise key — handle \n as text or real newlines
+  const normalised = privateKey.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+  const pemContents = normalised.split('\n').filter(line => line && !line.startsWith('-----')).join('');
   const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
 
   const cryptoKey = await crypto.subtle.importKey(
