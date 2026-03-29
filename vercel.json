@@ -1,8 +1,4 @@
 {
-  "functions": {
-    "api/auth.js": { "runtime": "edge" },
-    "api/sync.js": { "runtime": "edge" }
-  },
   "rewrites": [
     { "source": "/api/auth", "destination": "/api/auth.js" },
     { "source": "/api/sync", "destination": "/api/sync.js" },
